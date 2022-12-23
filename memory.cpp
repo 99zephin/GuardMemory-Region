@@ -8,7 +8,7 @@ void gaurd_memory() {
 
 	//Allocate a memory region using PAGE_NOACCESS, which gaurds the memory region
 	memory_region = (unsigned char*)VirtualAlloc(memory_address, sizeof(memory_address),
-		MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE | PAGE_NOACCESS);
+		MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
 	//Check if allocation was succesfull
 	if (memory_region == NULL) {
@@ -16,13 +16,21 @@ void gaurd_memory() {
 
 		//Here you can try allocate memory at an arbitrary position
 		memory_region = (unsigned char*)VirtualAlloc(memory_address, sizeof(memory_address),
-			MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE | PAGE_NOACCESS);
+			MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
 		//If it fails again, that means you are out of memory
 		if (memory_region == NULL) {
 			SetLastError(ERROR_OUTOFMEMORY);
 		}
 	}
+	
+	//Load whatever you want to execute
+	
+	//Gaurd the memory region
+	DWORD gaurd;
+  	VirtualProtect(memory_region, sizeof(memory_region), PAGE_NOACCESS, &gaurd);
+	
+	//Execute what you loaded
 
 	//Check if the gaurded memory region has been accessed
 	//To be more efficient, you could run this in a thread, and close the thread after you have free'd all memory
@@ -35,9 +43,6 @@ void gaurd_memory() {
 
 		exit(0);
 	}
-
-	//Here you want to map whatever you need
-	//I would also recommened converting it into a byte array (can use HxD)
 
 	//Erase all the memory from that specific address
 	ZeroMemory(memory_address, sizeof(memory_address));
